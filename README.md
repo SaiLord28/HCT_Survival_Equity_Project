@@ -19,6 +19,37 @@ This project implements a distributed, service-oriented architecture to deliver 
 └── ai_service/    # AI/ML Model (Python, Scikit-learn, XGBoost)
 ```
 
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TB
+    subgraph Docker["Docker Compose"]
+        subgraph Services["Services"]
+            FE["🖥️ Frontend<br/>React + Vite<br/>Port: 80"]
+            BE["⚙️ Backend<br/>FastAPI<br/>Port: 8001"]
+            AI["🤖 AI Service<br/>FastAPI + ML<br/>Port: 8000"]
+        end
+        
+        subgraph Data["Data Layer"]
+            PG[("🐘 PostgreSQL<br/>Port: 5432")]
+            RD[("🔴 Redis<br/>Port: 6379")]
+            ML["📦 Model<br/>pipeline.pkl"]
+        end
+    end
+    
+    FE -->|REST API| BE
+    BE -->|Predictions| AI
+    BE -->|SQL| PG
+    BE -->|Sessions| RD
+    AI -->|Load/Save| ML
+    
+    style FE fill:#61dafb,stroke:#333
+    style BE fill:#009688,stroke:#333
+    style AI fill:#ff6f00,stroke:#333
+    style PG fill:#336791,stroke:#333
+    style RD fill:#dc382d,stroke:#333
+```
+
 ---
 
 ### 1. Frontend Service
