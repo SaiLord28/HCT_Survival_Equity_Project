@@ -1,10 +1,22 @@
-# <div align="center">HCT Survival Prediction System</div>
-## <div align="center">CIBMTR Equity in Post-HCT Survival Predictions</div>
+# <div align="center">HCT Survival Prediction System - CIBMTR Equity in Post-HCT Survival Predictions</div>
+
+## <div align="center">Universidad Distrital Francisco José de Caldas</div>
+
+### <div align="center">Faculty of Systems Engineering</div>
+
+
+### <div align="center">Authors</div>
+ <div align="center">Sergio Nicolás Mendivelso - 20231020227 - snmendivelsom@udistrital.edu.co - @SaiLord28</div>
+ <div align="center">Sergio Leonardo Moreno Granado - 20242020091 - slmorenog@udistrital.edu.co - @slmorenog-ud</div>
+ <div align="center">Juan Manuel Otálora Hernandez - 20242020018 - jmotalorah@udistrital.edu.co - @otalorah</div>
+ <div align="center">Juan Diego Moreno Ramos - 20242020009 - juandmorenor@udistrital. edu.co - @juandyi</div>
 
 ---
 
 > **Research Foundation**  
 > This system is the culmination of extensive research conducted through a series of workshops exploring system design, robust architecture, simulation validation, and machine learning equity. The 7-module ML pipeline architecture emerged from this investigation, ensuring a scientifically grounded approach to fair and accurate survival predictions.
+
+**Project Analysis:** https://github.com/SaiLord28/HCT_Survival_Equity_System_Analysis
 
 ---
 
@@ -17,6 +29,37 @@ This project implements a distributed, service-oriented architecture to deliver 
 ├── frontend/      # User Interface (React)
 ├── backend/       # Business Logic (FastAPI)
 └── ai_service/    # AI/ML Model (Python, Scikit-learn, XGBoost)
+```
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TB
+    subgraph Docker["Docker Compose"]
+        subgraph Services["Services"]
+            FE["🖥️ Frontend<br/>React + Vite<br/>Port: 80"]
+            BE["⚙️ Backend<br/>FastAPI<br/>Port: 8001"]
+            AI["🤖 AI Service<br/>FastAPI + ML<br/>Port: 8000"]
+        end
+        
+        subgraph Data["Data Layer"]
+            PG[("🐘 PostgreSQL<br/>Port: 5432")]
+            RD[("🔴 Redis<br/>Port: 6379")]
+            ML["📦 Model<br/>pipeline.pkl"]
+        end
+    end
+    
+    FE -->|REST API| BE
+    BE -->|Predictions| AI
+    BE -->|SQL| PG
+    BE -->|Sessions| RD
+    AI -->|Load/Save| ML
+    
+    style FE fill:#61dafb,stroke:#333
+    style BE fill:#009688,stroke:#333
+    style AI fill:#ff6f00,stroke:#333
+    style PG fill:#336791,stroke:#333
+    style RD fill:#dc382d,stroke:#333
 ```
 
 ---
