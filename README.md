@@ -16,6 +16,8 @@
 > **Research Foundation**  
 > This system is the culmination of extensive research conducted through a series of workshops exploring system design, robust architecture, simulation validation, and machine learning equity. The 7-module ML pipeline architecture emerged from this investigation, ensuring a scientifically grounded approach to fair and accurate survival predictions.
 
+**Project Analysis:** https://github.com/SaiLord28/HCT_Survival_Equity_System_Analysis
+
 ---
 
 ## <div align="center">Distributed System Architecture</div>
