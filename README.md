@@ -1,4 +1,4 @@
-# <div align="center">HCT Survival Prediction System - >CIBMTR Equity in Post-HCT Survival Predictions</div>
+# <div align="center">HCT Survival Prediction System - CIBMTR Equity in Post-HCT Survival Predictions</div>
 
 ## <div align="center">Universidad Distrital Francisco José de Caldas</div>
 
