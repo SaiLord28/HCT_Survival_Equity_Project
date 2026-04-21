@@ -154,6 +154,8 @@ class TrainRequest(BaseModel):
     data_path: str
     model_type: str = "gbm"
     n_features: int = 45  # Increased to include all comorbidities and clinical features
+    compare_with_all_features: bool = False
+    performance_tolerance: float = 0.01
 
 
 class ModelInfo(BaseModel):
@@ -368,6 +370,16 @@ async def train_model(request: TrainRequest):
         raise HTTPException(status_code=400, detail=f"Data file not found: {request.data_path}")
     
     try:
+        comparison_results = None
+        if request.compare_with_all_features:
+            comparison_pipeline = HCTPipeline()
+            comparison_results = comparison_pipeline.compare_feature_engineering_performance(
+                request.data_path,
+                model_type=request.model_type,
+                engineered_n_features=request.n_features,
+                performance_tolerance=request.performance_tolerance
+            )
+        
         pipeline = HCTPipeline()
         results = pipeline.train(
             request.data_path,
@@ -382,7 +394,8 @@ async def train_model(request: TrainRequest):
         return {
             "status": "success",
             "message": "Model trained successfully",
-            "results": results
+            "results": results,
+            "comparison": comparison_results
         }
     
     except Exception as e:

@@ -10,6 +10,7 @@ from pathlib import Path
 import pickle
 import json
 from datetime import datetime
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 # Import all modules (M1-M7)
 from .m1_preprocessing import DataPreprocessor
@@ -186,7 +187,6 @@ class HCTPipeline:
         y_proba = self.model.predict_proba(X_selected)
         y_pred = self.model.predict(X_selected)
         
-        from sklearn.metrics import accuracy_score, roc_auc_score
         train_metrics = {
             'accuracy': float(accuracy_score(y_event, y_pred)),
             'auc_roc': float(roc_auc_score(y_event, y_proba))
@@ -259,6 +259,101 @@ class HCTPipeline:
         print("=" * 60)
         
         return results
+    
+    def compare_feature_engineering_performance(
+        self,
+        data_path: str,
+        model_type: str = 'gbm',
+        engineered_n_features: int = 25,
+        use_equity_weights: bool = True,
+        performance_tolerance: float = 0.01
+    ) -> Dict:
+        """
+        Compare performance between:
+        1) model trained with all preprocessed variables, and
+        2) model trained with variables selected after feature engineering (M3).
+        
+        Note:
+            This routine trains/evaluates both configurations, so it can take
+            roughly ~2x the time of a regular single training run.
+        """
+        df = self.preprocessor.load_data(data_path)
+        df_original = df.copy()
+        X, y_event, _ = self.preprocessor.fit_transform(df)
+        
+        groups = df_original[self.group_col].values if self.group_col in df_original.columns else None
+        sample_weights = None
+        if groups is not None and use_equity_weights:
+            sample_weights = self.equity_analyzer.calculate_reweights(df_original)
+        
+        def evaluate_configuration(X_config: pd.DataFrame) -> Dict[str, Any]:
+            model_instance = PredictiveModel()
+            cv_results = model_instance.cross_validate(
+                X_config,
+                y_event,
+                groups=groups,
+                n_splits=5,
+                model_type=model_type if model_type != 'ensemble' else 'gbm'
+            )
+            
+            if model_type == 'ensemble':
+                trained_model = EnsembleModel()
+                trained_model.train(X_config, y_event, sample_weights=sample_weights)
+            else:
+                trained_model = model_instance
+                trained_model.train(
+                    X_config,
+                    y_event,
+                    model_type=model_type,
+                    sample_weights=sample_weights
+                )
+            
+            y_pred = trained_model.predict(X_config)
+            y_proba = trained_model.predict_proba(X_config)
+            
+            return {
+                'n_features': int(X_config.shape[1]),
+                'cv_accuracy': float(cv_results.mean_accuracy),
+                'cv_auc': float(cv_results.mean_auc),
+                'train_accuracy': float(accuracy_score(y_event, y_pred)),
+                'train_auc': float(roc_auc_score(y_event, y_proba))
+            }
+        
+        # 1) All preprocessed variables
+        all_variables_metrics = evaluate_configuration(X)
+        
+        # 2) Feature-engineered/selected variables (M3)
+        selected_features = self.feature_selector.select_features(
+            X,
+            y_event,
+            df_original=df_original,
+            n_features=engineered_n_features,
+            method='combined',
+            group_col=self.group_col
+        )
+        X_engineered = X[selected_features]
+        engineered_metrics = evaluate_configuration(X_engineered)
+        
+        cv_auc_delta = engineered_metrics['cv_auc'] - all_variables_metrics['cv_auc']
+        cv_accuracy_delta = engineered_metrics['cv_accuracy'] - all_variables_metrics['cv_accuracy']
+        
+        performance_maintained = (
+            cv_auc_delta >= -performance_tolerance and
+            cv_accuracy_delta >= -performance_tolerance
+        )
+        
+        return {
+            'timestamp': datetime.now().isoformat(),
+            'model_type': model_type,
+            'performance_tolerance': performance_tolerance,
+            'all_variables_model': all_variables_metrics,
+            'feature_engineered_model': engineered_metrics,
+            'comparison': {
+                'cv_auc_delta': float(cv_auc_delta),
+                'cv_accuracy_delta': float(cv_accuracy_delta),
+                'performance_maintained': performance_maintained
+            }
+        }
     
     def _apply_clinical_adjustments(self, base_proba: float, patient_data: Dict) -> float:
         """

@@ -77,8 +77,26 @@ Response: {
 ### Train Model
 ```
 POST /train
-Body: { "model_type": "gbm", "n_features": 45 }
-Response: { "status": "success", "metrics": {...} }
+Body: {
+  "data_path": "/app/data/raw/train.csv",
+  "model_type": "gbm",
+  "n_features": 45,
+  "compare_with_all_features": true,
+  "performance_tolerance": 0.01
+}
+Response: {
+  "status": "success",
+  "results": {...},
+  "comparison": {
+    "all_variables_model": {...},
+    "feature_engineered_model": {...},
+    "comparison": {
+      "cv_auc_delta": ...,
+      "cv_accuracy_delta": ...,
+      "performance_maintained": true
+    }
+  }
+}
 ```
 
 ### Fairness Metrics
