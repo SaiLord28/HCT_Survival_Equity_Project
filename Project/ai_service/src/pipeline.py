@@ -19,6 +19,7 @@ from .m4_models import PredictiveModel, EnsembleModel
 from .m5_calibration import FairnessCalibrator
 from .m6_uncertainty import UncertaintyQuantifier
 from .m7_outputs import OutputGenerator, PredictionResult
+from .settings import DEFAULT_N_FEATURES
 
 
 class HCTPipeline:
@@ -57,7 +58,7 @@ class HCTPipeline:
         self,
         data_path: str,
         model_type: str = 'gbm',
-        n_features: int = 30,
+        n_features: int = DEFAULT_N_FEATURES,
         use_equity_weights: bool = True
     ) -> Dict:
         """

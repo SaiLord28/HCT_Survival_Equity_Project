@@ -12,6 +12,7 @@ from pathlib import Path
 
 # Import pipeline
 from src.pipeline import HCTPipeline
+from src.settings import DEFAULT_N_FEATURES
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -153,7 +154,7 @@ class TrainRequest(BaseModel):
     """Request for training."""
     data_path: str
     model_type: str = "gbm"
-    n_features: int = 30  # Reduced from 45 while preserving clinically forced variables
+    n_features: int = DEFAULT_N_FEATURES  # Reduced from 45 while preserving clinically forced variables
 
 
 class ModelInfo(BaseModel):

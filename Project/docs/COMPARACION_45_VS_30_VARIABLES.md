@@ -18,6 +18,7 @@ Sí, es viable si se mantiene la lógica clínica actual:
 
 Para evitar inconsistencias, el valor por defecto quedó alineado en:
 
+- `ai_service/src/settings.py` (`DEFAULT_N_FEATURES = 30`)
 - `ai_service/api.py` (`TrainRequest.n_features`)
 - `ai_service/src/pipeline.py` (`HCTPipeline.train`)
 - `ai_service/src/m3_features.py` (`FeatureSelector.select_features`)

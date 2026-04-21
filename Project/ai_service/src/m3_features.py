@@ -10,6 +10,7 @@ from sklearn.feature_selection import mutual_info_classif, RFE
 from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import spearmanr
 from dataclasses import dataclass
+from .settings import DEFAULT_N_FEATURES
 
 
 @dataclass
@@ -234,7 +235,7 @@ class FeatureSelector:
         X: pd.DataFrame,
         y: pd.Series,
         df_original: Optional[pd.DataFrame] = None,
-        n_features: int = 30,
+        n_features: int = DEFAULT_N_FEATURES,
         method: str = 'combined',
         group_col: str = 'race_group',
         force_comorbidities: bool = True
