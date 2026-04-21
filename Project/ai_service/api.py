@@ -153,7 +153,7 @@ class TrainRequest(BaseModel):
     """Request for training."""
     data_path: str
     model_type: str = "gbm"
-    n_features: int = 45  # Increased to include all comorbidities and clinical features
+    n_features: int = 30  # Reduced from 45 while preserving clinically forced variables
 
 
 class ModelInfo(BaseModel):

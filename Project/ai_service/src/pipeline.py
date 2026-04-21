@@ -57,7 +57,7 @@ class HCTPipeline:
         self,
         data_path: str,
         model_type: str = 'gbm',
-        n_features: int = 25,
+        n_features: int = 30,
         use_equity_weights: bool = True
     ) -> Dict:
         """

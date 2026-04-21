@@ -138,7 +138,7 @@ class FeatureSelector:
     FORCED_COMORBIDITY_FEATURES = [14 comorbidities]
     ADDITIONAL_CLINICAL_FEATURES = [13 clinical variables]
     
-    def select_features(X, y, n_features=45) -> List[str]
+    def select_features(X, y, n_features=30) -> List[str]
     def get_feature_importance(X, y) -> pd.DataFrame
 ```
 
@@ -227,7 +227,7 @@ class OutputGenerator:
 
 ```python
 class HCTPipeline:
-    def train(data_path, model_type='gbm', n_features=45) -> Dict
+    def train(data_path, model_type='gbm', n_features=30) -> Dict
     def predict(patient_data: Dict) -> PredictionResult
     def save(path: str)
     def load(path: str)
@@ -237,7 +237,7 @@ class HCTPipeline:
 
 1. **M1**: Load and validate data
 2. **M2**: Calculate equity weights
-3. **M3**: Select features (45)
+3. **M3**: Select features (30)
 4. **M4**: Train model with CV
 5. **M5**: Calibrate for fairness
 6. **M6**: Configure uncertainty estimation

@@ -3,7 +3,7 @@
 Model Retraining Script
 ========================
 Retrains the HCT prediction model with:
-- 45 features (instead of 25)
+- 30 features (based on the 45-feature strategy)
 - Forced inclusion of all comorbidities
 - 5-fold stratified cross-validation
 - Enhanced clinical features
@@ -56,7 +56,7 @@ def train_new_model():
     print(f"   - Trained: {current.get('training_date', 'Unknown')}")
     
     print("\n🔄 Starting retraining with enhanced configuration...")
-    print("   - Features: 45 (including all comorbidities)")
+    print("   - Features: 30 (including all comorbidities + key clinical variables)")
     print("   - Model: GBM (Gradient Boosting)")
     print("   - Validation: 5-fold Stratified CV")
     print("\n   This may take 5-10 minutes...\n")
@@ -68,7 +68,7 @@ def train_new_model():
             json={
                 "data_path": "/app/data/raw/raw/train.csv",
                 "model_type": "gbm",
-                "n_features": 45
+                "n_features": 30
             },
             timeout=600  # 10 minute timeout
         )

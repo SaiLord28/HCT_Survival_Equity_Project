@@ -234,7 +234,7 @@ class FeatureSelector:
         X: pd.DataFrame,
         y: pd.Series,
         df_original: Optional[pd.DataFrame] = None,
-        n_features: int = 20,
+        n_features: int = 30,
         method: str = 'combined',
         group_col: str = 'race_group',
         force_comorbidities: bool = True
