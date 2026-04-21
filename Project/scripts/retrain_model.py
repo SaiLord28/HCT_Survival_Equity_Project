@@ -113,12 +113,12 @@ def train_new_model():
                 
                 # Feature engineering comparison
                 comparison = result.get('comparison') or {}
-                deltas = comparison.get('comparison') or {}
+                comparison_details = comparison.get('comparison') or {}
                 if comparison:
                     print(f"\n🆚 Comparación de performance (todas vs feature engineering):")
-                    print(f"   - Δ CV AUC: {deltas.get('cv_auc_delta', 0):+.4f}")
-                    print(f"   - Δ CV Accuracy: {deltas.get('cv_accuracy_delta', 0):+.4f}")
-                    maintained = deltas.get('performance_maintained')
+                    print(f"   - Δ CV AUC: {comparison_details.get('cv_auc_delta', 0):+.4f}")
+                    print(f"   - Δ CV Accuracy: {comparison_details.get('cv_accuracy_delta', 0):+.4f}")
+                    maintained = comparison_details.get('performance_maintained')
                     if maintained is not None:
                         print(f"   - ¿Se mantiene el performance?: {'✅ Sí' if maintained else '❌ No'}")
                 

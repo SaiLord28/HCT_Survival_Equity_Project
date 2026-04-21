@@ -272,6 +272,10 @@ class HCTPipeline:
         Compare performance between:
         1) model trained with all preprocessed variables, and
         2) model trained with variables selected after feature engineering (M3).
+        
+        Note:
+            This routine trains/evaluates both configurations, so it can take
+            roughly ~2x the time of a regular single training run.
         """
         df = self.preprocessor.load_data(data_path)
         df_original = df.copy()
