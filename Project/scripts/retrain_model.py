@@ -68,7 +68,9 @@ def train_new_model():
             json={
                 "data_path": "/app/data/raw/raw/train.csv",
                 "model_type": "gbm",
-                "n_features": 45
+                "n_features": 45,
+                "compare_with_all_features": True,
+                "performance_tolerance": 0.01
             },
             timeout=600  # 10 minute timeout
         )
@@ -108,6 +110,17 @@ def train_new_model():
                 fairness = stages.get('fairness', {})
                 print(f"\n⚖️ Fairness Metrics:")
                 print(f"   - Passed: {'✅' if fairness.get('fairness_passed') else '❌'}")
+                
+                # Feature engineering comparison
+                comparison = result.get('comparison') or {}
+                deltas = comparison.get('comparison') or {}
+                if comparison:
+                    print(f"\n🆚 Comparación de performance (todas vs feature engineering):")
+                    print(f"   - Δ CV AUC: {deltas.get('cv_auc_delta', 0):+.4f}")
+                    print(f"   - Δ CV Accuracy: {deltas.get('cv_accuracy_delta', 0):+.4f}")
+                    maintained = deltas.get('performance_maintained')
+                    if maintained is not None:
+                        print(f"   - ¿Se mantiene el performance?: {'✅ Sí' if maintained else '❌ No'}")
                 
             return True
         else:
