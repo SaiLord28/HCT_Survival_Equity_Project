@@ -1,14 +1,14 @@
-# Comparacion de Feature Engineering vs Modelo con 60 Variables
+# Comparison of Feature Engineering vs 60-Variable Model
 
-Fecha de ejecucion: 2026-04-21
-Modelo: GBM
+Execution Date: 2026-04-21
+Model: GBM
 Dataset: /app/data/raw/raw/train.csv
 
-## 1) Variables usadas por Feature Engineering (M3)
+## 1) Variables used by Feature Engineering (M3)
 
-Cantidad seleccionada: 45
+Selected count: 45
 
-Lista completa seleccionada:
+Full selected list:
 1. cardiac
 2. arrhythmia
 3. diabetes
@@ -55,49 +55,49 @@ Lista completa seleccionada:
 44. race_group
 45. tce_div_match
 
-### Subgrupos relevantes dentro de las 45
-- Comorbilidades incluidas: 14 forzadas + comorbidity_score
-- Variables clinicas prioritarias incluidas: 16
-- Variable sensible incluida en esta corrida: race_group
+### Relevant subgroups within the 45
+- Included comorbidities: 14 forced + comorbidity_score
+- Priority clinical variables included: 16
+- Sensitive variable included in this run: race_group
 
-## 2) Archivos donde se define y usa esta logica
+## 2) Files where this logic is defined and used
 
 - Project/ai_service/src/m3_features.py
-  - Define la logica de seleccion de variables (clinicas, comorbilidades forzadas, combinacion estadistica + ML, y filtro por disparidad de disponibilidad).
+  - Defines the variable selection logic (clinical, forced comorbidities, statistical + ML combination, and availability disparity filter).
 - Project/ai_service/src/m1_preprocessing.py
-  - Define variables de entrada preprocesadas y features creadas (por ejemplo age_donor_diff, hla_match_quality).
+  - Defines preprocessed input variables and created features (e.g., age_donor_diff, hla_match_quality).
 - Project/ai_service/src/pipeline.py
-  - Ejecuta la seleccion M3 dentro del flujo de entrenamiento y expone la comparacion entre modelo con todas las variables y modelo con feature engineering.
+  - Executes M3 selection within the training flow and exposes the comparison between the all-variable model and the feature engineering model.
 - Project/ai_service/api.py
-  - Expone el endpoint /train con compare_with_all_features para ejecutar la comparacion en una sola corrida.
+  - Exposes the `/train` endpoint with `compare_with_all_features` to execute the comparison in a single run.
 - Project/ai_service/data/raw/data_dictionary.csv
-  - Diccionario de variables base del dataset.
+  - Base variable dictionary of the dataset.
 
-## 3) Comparacion real contra el grupo de 60 variables
+## 3) Actual comparison against the 60-variable group
 
-### Resultados obtenidos
+### Results obtained
 
-| Configuracion | N features | CV Accuracy | CV AUC |
+| Configuration | N features | CV Accuracy | CV AUC |
 |---|---:|---:|---:|
-| Todas las variables preprocesadas | 60 | 0.6798958333 | 0.7417819508 |
+| All preprocessed variables | 60 | 0.6798958333 | 0.7417819508 |
 | Feature engineering (M3) | 45 | 0.6793055556 | 0.7414772292 |
 
 Deltas (45 - 60):
 - Delta CV AUC: -0.0003047216
 - Delta CV Accuracy: -0.0005902778
-- performance_maintained: true (tolerancia 0.01)
+- performance_maintained: true (0.01 tolerance)
 
-### Cuanto mejora realmente frente al grupo de 60
+### How much it really improves versus the 60 group
 
-No hay mejora en metrica predictiva central; hay una reduccion minima:
-- CV AUC cae ~0.041% relativo
-- CV Accuracy cae ~0.087% relativo
+There is no improvement in the central predictive metric; there is a minimal reduction:
+- CV AUC drops ~0.041% relative
+- CV Accuracy drops ~0.087% relative
 
-Sin embargo, si hay mejora de eficiencia y control clinico:
-- Reduccion de dimensionalidad: 60 -> 45 (25% menos variables)
-- Se mantiene el rendimiento practicamente igual dentro de tolerancia
-- Se garantiza inclusion de comorbilidades y variables clinicas criticas
+However, there is an improvement in efficiency and clinical control:
+- Dimensionality reduction: 60 -> 45 (25% fewer variables)
+- Performance is maintained practically the same within tolerance
+- Inclusion of critical clinical variables and comorbidities is guaranteed
 
-## 4) Conclusion ejecutiva
+## 4) Executive conclusion
 
-Feature Engineering (M3) no incrementa el AUC/Accuracy respecto al conjunto de 60 variables, pero conserva performance con perdida marginal y ofrece un modelo mas compacto y controlado clinicamente. Para este proyecto, el beneficio principal es robustez clinica + simplificacion del modelo, no una ganancia numerica de AUC.
+Feature Engineering (M3) does not increase AUC/Accuracy compared to the 60-variable set, but it retains performance with marginal loss and offers a more compact and clinically controlled model. For this project, the main benefit is clinical robustness + model simplification, not a numerical AUC gain.

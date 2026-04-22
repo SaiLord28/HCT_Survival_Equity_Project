@@ -1,110 +1,110 @@
-# Comparacion 60 vs 45 vs 30 y hallazgos de feature engineering
+# Comparison 60 vs 45 vs 30 and Feature Engineering Findings
 
-Fecha de ejecucion: 2026-04-21
+Execution Date: 2026-04-21
 
-## Resumen ejecutivo
+## Executive Summary
 
-- Se ejecutaron pruebas comparativas del pipeline con `n_features` en 60, 45 y 30.
-- La reduccion 60 -> 45 mantiene rendimiento muy similar.
-- La reduccion 45 -> 30 muestra una caida pequena en AUC y en metrica de equidad, pero aun pasa fairness.
-- Hallazgo critico: el escenario de 30 no selecciona 30 reales en la implementacion actual.
+- Comparative tests of the pipeline were run with `n_features` at 60, 45, and 30.
+- The 60 -> 45 reduction maintains very similar performance.
+- The 45 -> 30 reduction shows a small drop in AUC and the equity metric, but it still passes fairness.
+- Critical finding: the 30 scenario does not select 30 actual features in the current implementation.
 
-## Metodologia
+## Methodology
 
 - Dataset: `Project/ai_service/data/raw/train.csv`.
-- Pipeline evaluado: `Project/ai_service/src/pipeline.py` (entrenamiento completo M1-M7).
-- Configuracion: `model_type='gbm'` y `n_features` en 60, 45, 30.
-- Metricas analizadas: CV AUC, CV Accuracy, AUC de entrenamiento, Stratified C-index, C-index disparity, fairness_passed y estabilidad.
+- Evaluated pipeline: `Project/ai_service/src/pipeline.py` (full training M1-M7).
+- Configuration: `model_type='gbm'` and `n_features` at 60, 45, 30.
+- Metrics analyzed: CV AUC, CV Accuracy, Training AUC, Stratified C-index, C-index disparity, fairness_passed, and stability.
 
-## Resultados de comparacion
+## Comparison Results
 
-| n_features solicitado | n_features seleccionado | CV AUC | CV Accuracy | Train AUC | Stratified C-index | C-index disparity | Fairness | Estabilidad |
+| requested n_features | selected n_features | CV AUC | CV Accuracy | Train AUC | Stratified C-index | C-index disparity | Fairness | Stability |
 |---|---:|---:|---:|---:|---:|---:|---|---|
 | 60 | 60 | 0.74196 | 0.67965 | 0.81015 | 0.81004 | 0.01598 | True | High |
 | 45 | 45 | 0.74148 | 0.67931 | 0.80905 | 0.80880 | 0.01598 | True | Medium |
 | 30 | 44 | 0.74004 | 0.67931 | 0.80896 | 0.80867 | 0.01965 | True | Medium |
 
-## Interpretacion
+## Interpretation
 
 1. 60 vs 45
-- Degradacion minima en AUC y accuracy.
-- Equidad practicamente igual en disparidad.
+- Minimal degradation in AUC and accuracy.
+- Equity is practically the same in terms of disparity.
 
 2. 45 vs 30
-- Caida moderada de CV AUC.
-- Ligero aumento en disparidad (peor que 45), aunque sigue en estado `fairness_passed=True`.
+- Moderate drop in CV AUC.
+- Slight increase in disparity (worse than 45), although it remains in `fairness_passed=True` state.
 
-3. Efecto practico
-- La estrategia actual justifica el recorte a 45 con bajo costo.
-- Para 30, antes de concluir, hay que corregir la logica del selector porque hoy no aplica un tope real de 30.
+3. Practical effect
+- The current strategy justifies the cut to 45 with low cost.
+- For 30, before concluding, the selector logic must be corrected because today it does not apply a real cap of 30.
 
-## Hallazgo clave: el modo 30 no esta seleccionando 30
+## Key finding: 30 mode is not selecting 30
 
-En `Project/ai_service/src/m3_features.py`, la funcion `select_features` inicia con un bloque de variables forzadas:
+In `Project/ai_service/src/m3_features.py`, the `select_features` function starts with a forced variables block:
 
-- Comorbilidades forzadas
+- Forced comorbidities
 - `comorbidity_score`
-- Variables clinicas adicionales
-- Variables clinicas prioritarias
+- Additional clinical variables
+- Priority clinical variables
 
-Con el dataset actual, ese bloque forzado suma 43 variables. Por eso, al solicitar 30, el selector termina con 44 (el piso forzado ya supera el objetivo).
+With the current dataset, that forced block sums up to 43 variables. Therefore, when requesting 30, the selector ends up with 44 (the forced floor already exceeds the target).
 
-Implicacion:
-- El parametro `n_features` no funciona como limite estricto cuando `forced_features > n_features`.
+Implication:
+- The `n_features` parameter does not work as a strict limit when `forced_features > n_features`.
 
-## Feature engineering ya implementado
+## Feature engineering already implemented
 
-En `Project/ai_service/src/m1_preprocessing.py` se crean estas features:
+In `Project/ai_service/src/m1_preprocessing.py` the following features are created:
 
 1. `age_donor_diff`
-- Diferencia entre edad del paciente y del donante.
+- Difference between the patient's age and the donor's age.
 
 2. `high_risk_comorbidity`
-- Indicador de alta comorbilidad severa.
+- Indicator of severe high comorbidity.
 
 3. `hla_match_quality`
-- Puntaje compuesto de matching HLA.
+- Composite HLA matching score.
 
-Adicionalmente, se aplica:
-- Imputacion equity-aware por `race_group`.
-- Escalado de variables numericas.
-- Codificacion de categoricas con manejo de categorias no vistas.
+Additionally, the following are applied:
+- Equity-aware imputation by `race_group`.
+- Scaling of numerical variables.
+- Categorical encoding with handling of unseen categories.
 
-## Hallazgo tecnico en feature engineering
+## Technical finding in feature engineering
 
-`high_risk_comorbidity` esta quedando constante (sin varianza) en estas pruebas.
+`high_risk_comorbidity` is remaining constant (without variance) in these tests.
 
-Posible causa en la implementacion actual:
-- La logica revisa condiciones numericas en columnas que originalmente pueden venir como categoricas tipo `Y/N`.
-- Resultado: la bandera no se activa como se espera y pierde poder predictivo.
+Possible cause in the current implementation:
+- The logic checks for numerical conditions in columns that originally may come as categorical such as `Y/N`.
+- Result: the flag does not trigger as expected and loses predictive power.
 
-## Pruebas automatizadas del proyecto
+## Project automated tests
 
-Se intento ejecutar `Project/ai_service/test_pipeline.py` y fallo por:
+An attempt was made to run `Project/ai_service/test_pipeline.py` and it failed because of:
 
-- `IndentationError: unexpected indent` en la linea 1.
+- `IndentationError: unexpected indent` on line 1.
 
-Implicacion:
-- El script de pruebas integradas necesita correccion para ser util como verificacion automatizada continua.
+Implication:
+- The integrated test script needs correction to be useful as continuous automated verification.
 
-## Recomendaciones priorizadas
+## Prioritized Recommendations
 
-1. Corregir `high_risk_comorbidity`
-- Detectar explicitamente valores afirmativos (`Y`, `Yes`, `1`, `true`) antes o despues del encoding de forma consistente.
+1. Fix `high_risk_comorbidity`
+- Explicitly detect affirmative values (`Y`, `Yes`, `1`, `true`) before or after encoding consistently.
 
-2. Hacer `n_features` un tope real
-- Separar `must_have` (minimo clinico obligatorio) de `should_have` (ranking).
-- Si se pide 30, seleccionar exactamente 30 o reportar claramente que no es posible por restricciones clinicas.
+2. Make `n_features` a real cap
+- Separate `must_have` (mandatory clinical minimum) from `should_have` (ranking).
+- If 30 is requested, select exactly 30 or clearly report that it is not possible due to clinical constraints.
 
-3. Agregar indicadores de missingness
-- Especialmente para variables con alta ausencia (por ejemplo `tce_match`, `mrd_hct`, `tce_imm_match`, `cyto_score_detail`).
+3. Add missingness indicators
+- Especially for variables with high missing rates (e.g. `tce_match`, `mrd_hct`, `tce_imm_match`, `cyto_score_detail`).
 
-4. Crear interacciones clinicas con respaldo de dominio
-- Ejemplos: `age_at_hct x comorbidity_score`, `dri_score x hla_match_quality`, `karnofsky_score x conditioning_intensity`.
+4. Create clinical interactions backed by domain knowledge
+- Examples: `age_at_hct x comorbidity_score`, `dri_score x hla_match_quality`, `karnofsky_score x conditioning_intensity`.
 
-## Decisiones sugeridas
+## Suggested Decisions
 
-1. Mantener 45 como baseline operativo inmediato.
-2. Corregir selector y feature engineering.
-3. Repetir benchmark con 30 real y comparar de nuevo contra 45 y 60.
-4. Adoptar 30 solo si la perdida de rendimiento y equidad se mantiene dentro del umbral clinico acordado.
+1. Keep 45 as the immediate operational baseline.
+2. Fix selector and feature engineering.
+3. Repeat benchmark with an actual 30 and compare again against 45 and 60.
+4. Adopt 30 only if the loss of performance and equity remains within the agreed clinical threshold.
