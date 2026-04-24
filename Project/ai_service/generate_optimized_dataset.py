@@ -60,7 +60,7 @@ DROP_DIRECT = [
     'donor_age',                        # captured by age_at_hct + donor_related
 ]
 
-# --- PASO 2: Individual HLA variables -> replaced by hla_composite ---
+# --- STEP 2: Individual HLA variables -> replaced by hla_composite ---
 # hla_composite = mean(hla_high_res_8, hla_high_res_10, hla_nmdp_6)
 # Once created, locus individual ones are redundant
 HLA_REPLACED_BY_COMPOSITE = [
